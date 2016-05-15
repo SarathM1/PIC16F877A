@@ -13,3 +13,22 @@
 #pragma config WRT = OFF        // Flash Program Memory Write Enable bits (Write protection off; all program memory may be written to by EECON control)
 #pragma config CP = OFF         // Flash Program Memory Code Protection bit (Code protection off)
 
+void pwm_init()
+{
+    PR2 = 249;
+    CCPR1L = 125 >> 2;
+    CCP1X = 125 & 2;
+    CCP1Y = 125 & 1;
+    T2CKPS1 = 0;
+    T2CKPS0 = 1;
+    CCP1M3 = 1;
+    CCP1M2 = 1;
+    TMR2ON = 1;
+}
+
+void main()
+{
+    TRISC2 = 0;
+    pwm_init();
+    while(1);
+}
