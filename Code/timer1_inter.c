@@ -1,5 +1,5 @@
 /*
- WAP to blink an LED every 1 second using timer1 interrupt; Fosc = 4MHz
+ WAP to blink an LED every 0.5 second using timer1 interrupt; Fosc = 4MHz
  */
 // PIC16F877A Configuration Bit Settings
 
@@ -19,3 +19,42 @@
 #pragma config CPD = OFF        // Data EEPROM Memory Code Protection bit (Data EEPROM code protection off)
 #pragma config WRT = OFF        // Flash Program Memory Write Enable bits (Write protection off; all program memory may be written to by EECON control)
 #pragma config CP = OFF         // Flash Program Memory Code Protection bit (Code protection off)
+
+volatile int count = 0;
+
+void timer_init()
+{
+    GIE  = 1;
+    PEIE = 1;
+    TMR1IE = 1;
+    TMR1IF = 0;
+    
+    TMR1H = 0;
+    TMR1L = 0;
+    T1CKPS0 = 1;  // Since Prescalar = 1:2    
+}
+
+void interrupt ISR()
+{
+    if(TMR1IF == 1)
+    {
+        TMR1IF = 0;
+        count++;
+    }
+}
+
+void main()
+{
+    timer_init();
+    TRISB0 = 0;
+    RB0 = 0;
+    TMR1ON = 1;
+    while(1)
+    {
+        if(count == 4)
+        {
+            RB0 = ~ RB0;
+            count = 0;
+        }
+    }
+}
