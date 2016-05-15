@@ -1,4 +1,6 @@
-
+/*
+ WAP to blink an LED every 1 second using timer0 interrupt; Fosc = 4MHz
+ */
 // PIC16F877A Configuration Bit Settings
 
 // 'C' source line config statements
