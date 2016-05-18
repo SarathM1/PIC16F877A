@@ -24,13 +24,9 @@
 
 void adc_init()
 {
-    TRISA0 = 1;         // AN0
+    TRISA = 0xff;         // AN0
     ADCON1 = 0x00;
-    ADON = 1;
-    ADCS2 = 0;
-    ADCS1 = 1;
-    ADCS0 = 0;          // Fosc/16 to ensure Tad  > 1.6us
-    ADFM = 0;
+    ADCON0 = 0x81;
 }
 
 int read_adc()
@@ -38,7 +34,7 @@ int read_adc()
     int value = 0;
     GO_nDONE = 1;
     while(GO_nDONE);
-    value = (ADRESH + ADRESL>>6);
+    value = ((ADRESH<<2) + (ADRESL>>6));
     return value;
 }
 
@@ -69,7 +65,7 @@ void main()
     {
         value = read_adc();
         display(value);
-        __delay_ms(500);
+        __delay_ms(100);
         ClearLCDScreen();
     }
 }
