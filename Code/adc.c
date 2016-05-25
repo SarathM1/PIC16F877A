@@ -45,7 +45,6 @@ float convertToVolt(int adc_value)
     float res;
     res = (float)adc_value;
     res = (res * 5/1023);
-    display_float(res);
     return res;
 }
 
@@ -54,6 +53,7 @@ void display_float(float val)
     char * buf;
     int status;
     buf = ftoa(val, &status);
+    buf[5] = '\0';                  //Float precision Adjustment
     WriteStringToLCD(buf);
 }
 
@@ -69,8 +69,8 @@ void main()
     {
         adc_value = read_adc();
         an0 = convertToVolt(adc_value);
-        //display_float(an0);
-        __delay_ms(100);
+        display_float(an0);
+        __delay_ms(10);
         ClearLCDScreen();
     }
 }
