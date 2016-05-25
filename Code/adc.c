@@ -5,8 +5,6 @@
 // 'C' source line config statements
 
 #include <xc.h>
-#include <stdio.h>
-#include <stdarg.h>
 #include <stdlib.h>
 
 // #pragma config statements should precede project file includes.
