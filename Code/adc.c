@@ -5,6 +5,9 @@
 // 'C' source line config statements
 
 #include <xc.h>
+#include <stdio.h>
+#include <stdarg.h>
+#include <stdlib.h>
 
 // #pragma config statements should precede project file includes.
 // Use project enums instead of #define for ON and OFF.
@@ -22,6 +25,7 @@
 #define _XTAL_FREQ 20000000
 #include "LCD.h"
 
+void display_float(float val);
 void adc_init()
 {
     TRISA = 0xff;         // AN0
@@ -31,40 +35,41 @@ void adc_init()
 
 int read_adc()
 {
-    int value = 0;
     GO_nDONE = 1;
     while(GO_nDONE);
-    value = ((ADRESH<<2) + (ADRESL>>6));
-    return value;
+    return ((ADRESH<<2) + (ADRESL>>6));
 }
 
-void display(int value)
-{   
-    int i;
-    char r;
-    char arr[11];
-    for(i=0; value; i++,value/=10)
-    {
-        r = value%10;
-        arr[i] = r + 0x30;
-    }
-    arr[i] = '\0';
-    
-    for(;i>=0;i--)
-        WriteDataToLCD(arr[i]);
+float convertToVolt(int adc_value)
+{
+    float res;
+    res = (float)adc_value;
+    res = (res * 5/1023);
+    display_float(res);
+    return res;
 }
+
+void display_float(float val)
+{
+    char * buf;
+    int status;
+    buf = ftoa(val, &status);
+    WriteStringToLCD(buf);
+}
+
 void main()
 {
-    int value;
-    
+    int adc_value;
+    float an0;
     adc_init();
     InitLCD();
     TRISB = 0x00;
     WriteStringToLCD("H3110 w0r1d");
     while(1)
     {
-        value = read_adc();
-        display(value);
+        adc_value = read_adc();
+        an0 = convertToVolt(adc_value);
+        //display_float(an0);
         __delay_ms(100);
         ClearLCDScreen();
     }
