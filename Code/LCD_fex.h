@@ -21,7 +21,7 @@
 #define LCD_Data_Bus_Dir_D7 	TRISB7
 
 // Constants
-#define E_Delay       200  
+#define E_Delay       20  
 
 
 // Function Declarations

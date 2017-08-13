@@ -20,6 +20,11 @@
 #pragma config CP = OFF         // Flash Program Memory Code Protection bit (Code protection off)
 #define _XTAL_FREQ 20000000
 
+#define FRWD_RELAY RC6
+#define REVERSE_RELAY RC7
+#define ON 1
+#define OFF 0
+
 
 #include "Code/LCD_fex.h"
 #include"Code/adc_fex.h"
@@ -31,10 +36,20 @@ void pwm_init()
     CCP1CON = 0b00111100;
 }
 
+void printAdcPeriod(int adc_val, float pwm_val)
+{
+    display_float(adc_val);
+    WriteDataToLCD('/');
+    
+    if(pwm_val==-1)
+        WriteStringToLCD(" STOP");
+    else
+        display_float(pwm_val);
+}
 
 void main(void) {
    float adc_value,for_percentage,rev_percentage;
-    
+   float pwm_val;
     TRISA = 0xff;
     TRISB = 0x00;
     TRISC = 0x00;
@@ -51,8 +66,7 @@ void main(void) {
         RC0 = ~RC0;     //test
        
         adc_value = read_adc();  
-        display_float(adc_value);
-        WriteDataToLCD('/');
+        
         
 //range-130 to 400 reverse
 //range-400 to 600 stop
@@ -60,46 +74,53 @@ void main(void) {
         
         if(adc_value > 400 && adc_value < 600)
         {
+            __delay_ms(20);
             CCPR1L = 0x00;
-            
-            WriteStringToLCD("STOP");
-            
-            RC6 = 0;
-            RC7 = 0;
+            printAdcPeriod(adc_value,-1);
+                      
+            FRWD_RELAY = OFF;
+            REVERSE_RELAY = OFF;
         }
         
-        else if(adc_value > 600)               
+        else if(adc_value >= 600)               
         {
-            for_percentage = ((adc_value - 600)/350);
-            
-            CCPR1L = (int)(for_percentage * 255);
-            
-            display_float((for_percentage * 255));
-            
-            RC6 = 1;                        //forward direction
+            __delay_ms(20);
+            adc_value = read_adc();
+            if(adc_value >= 600){
+                for_percentage = ((adc_value - 600)/350);
+                pwm_val = (int)(for_percentage * 255);
+                CCPR1L = pwm_val;
+                printAdcPeriod(adc_value, pwm_val);
+                FRWD_RELAY = ON;                        //forward direction
+            }
         }
         
-        else if(adc_value < 400)               
+        else if(adc_value <= 400)               
         {
-            __delay_ms(100);
-            if(adc_value < 400)
+            __delay_ms(20);
+            adc_value = read_adc();
+            if(adc_value <= 400)
             {
                 rev_percentage = (((adc_value - 400)* -1)/350); //-1 for avoid negative value
-
-                CCPR1L = (int)(rev_percentage * 255);
-
-                display_float(rev_percentage * 255);
-
-                RC7 = 1;                        //reverse direction
+                pwm_val = (int)(rev_percentage * 255);
+                CCPR1L = pwm_val;
+                printAdcPeriod(adc_value, pwm_val);
+                REVERSE_RELAY = ON;                        //reverse direction
             }
         }
         else
         {
-            WriteStringToLCD("Error!!");
+            //WriteStringToLCD("Error!!/STOP");
+            printAdcPeriod(adc_value, pwm_val);
+            CCPR1L = 0x00;
             __delay_ms(5000);
+            
+            FRWD_RELAY = OFF;
+            REVERSE_RELAY = OFF;
         }
                     
-        //__delay_ms(100);
-        ClearLCDScreen();
+        /*__delay_ms(15);
+        ClearLCDScreen();*/
+        WriteCommandToLCD(0x80);  // Cursor to beginning of line 1
     }
 }
