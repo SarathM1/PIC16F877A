@@ -45,8 +45,29 @@ void printAdcPeriod(int adc_val, float pwm_val)
         WriteStringToLCD(" STOP");
     else
         display_float(pwm_val);
+    WriteStringToLCD("   ");
 }
 
+void stop_motor()
+{
+    CCPR1L = 0x00;
+    FRWD_RELAY = OFF;
+    REVERSE_RELAY = OFF;
+}
+
+void move_forward()
+{
+    REVERSE_RELAY = OFF;                        //reverse direction
+    __delay_ms(5);
+    FRWD_RELAY = ON;                        //forward direction
+}
+
+void move_reverse()
+{
+    FRWD_RELAY = OFF;                        //forward direction
+    __delay_ms(5);
+    REVERSE_RELAY = ON;                        //reverse direction
+}
 void main(void) {
    float adc_value,for_percentage,rev_percentage;
    float pwm_val;
@@ -74,53 +95,49 @@ void main(void) {
         
         if(adc_value > 400 && adc_value < 600)
         {
-            __delay_ms(20);
-            CCPR1L = 0x00;
+            __delay_ms(80);
+            
             printAdcPeriod(adc_value,-1);
-                      
-            FRWD_RELAY = OFF;
-            REVERSE_RELAY = OFF;
+             
+            stop_motor();
         }
         
         else if(adc_value >= 600)               
         {
-            __delay_ms(20);
+            __delay_ms(80);
             adc_value = read_adc();
             if(adc_value >= 600){
                 for_percentage = ((adc_value - 600)/350);
-                pwm_val = (int)(for_percentage * 255);
+                pwm_val = (int)(for_percentage * 240);
                 CCPR1L = pwm_val;
                 printAdcPeriod(adc_value, pwm_val);
-                FRWD_RELAY = ON;                        //forward direction
+                
+                move_forward();
             }
         }
         
         else if(adc_value <= 400)               
         {
-            __delay_ms(20);
+            __delay_ms(80);
             adc_value = read_adc();
             if(adc_value <= 400)
             {
                 rev_percentage = (((adc_value - 400)* -1)/350); //-1 for avoid negative value
-                pwm_val = (int)(rev_percentage * 255);
+                pwm_val = (int)(rev_percentage * 240);
                 CCPR1L = pwm_val;
                 printAdcPeriod(adc_value, pwm_val);
-                REVERSE_RELAY = ON;                        //reverse direction
+                
+                move_reverse();
             }
         }
         else
         {
-            //WriteStringToLCD("Error!!/STOP");
-            printAdcPeriod(adc_value, pwm_val);
-            CCPR1L = 0x00;
+            WriteStringToLCD("Error/ STOP");
             __delay_ms(5000);
             
-            FRWD_RELAY = OFF;
-            REVERSE_RELAY = OFF;
+            stop_motor();
         }
                     
-        /*__delay_ms(15);
-        ClearLCDScreen();*/
         WriteCommandToLCD(0x80);  // Cursor to beginning of line 1
     }
 }
