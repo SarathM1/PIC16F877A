@@ -105,7 +105,7 @@ void InitLCD(void)
   /////////////// Reset Process End ////////////////
 	WriteCommandToLCD(0x28);    //function set
 	WriteCommandToLCD(0x0c);    //display on,cursor off,blink off
-	WriteCommandToLCD(0x01);    //clear display
+	ClearLCDScreen();    //clear display
 	WriteCommandToLCD(0x06);    //entry mode, set increment
 }
 
