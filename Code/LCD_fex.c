@@ -1,6 +1,27 @@
 #include "LCD_fex.h"
 #include <xc.h>
-#define _XTAL_FREQ 2000000
+#define _XTAL_FREQ 20000000
+#include	<stdlib.h>
+#include	<stdio.h>
+
+// quick and dirty ftoa for legacy code
+char *
+ftoa(float f, int * status)
+{
+	static char		buf[17];
+	char *			cp = buf;
+	unsigned long	l, rem;
+
+	if(f < 0) {
+		*cp++ = '-';
+		f = -f;
+	}
+	l = (unsigned long)f;
+	f -= (float)l;
+	rem = (unsigned long)(f * 1e6);
+	sprintf(cp, "%lu.%6.6lu", l, rem);
+	return buf;
+}
 
 void ToggleEpinOfLCD(void)
 {
@@ -102,6 +123,13 @@ void ClearLCDScreen(void)       // Clear the Screen and return cursor to zero po
 	__delay_ms(2);              // Delay for cursor to return at zero position
 }
 
-
+void display_float(float val)
+{
+    char * buf;
+    int status;
+    buf = ftoa(val, &status);
+    buf[5] = '\0';                  //Float precision Adjustment
+    WriteStringToLCD(buf);
+}
 
 

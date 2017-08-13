@@ -20,15 +20,13 @@
 #pragma config WRT = OFF        // Flash Program Memory Write Enable bits (Write protection off; all program memory may be written to by EECON control)
 #pragma config CP = OFF         // Flash Program Memory Code Protection bit (Code protection off)
 
-#define _XTAL_FREQ 20000000
-#include "LCD.h"
+#include "LCD_fex.h"
 
-void display_float(float val);
 void adc_init()
 {
     TRISA = 0xff;         // AN0
     ADCON1 = 0x00;
-    ADCON0 = 0x81;
+    ADCON0 = 0x81;       //Channel 2 selected (AN2)
 }
 
 int read_adc()
@@ -36,39 +34,4 @@ int read_adc()
     GO_nDONE = 1;
     while(GO_nDONE);
     return ((ADRESH<<2) + (ADRESL>>6));
-}
-
-float convertToVolt(int adc_value)
-{
-    float res;
-    res = (float)adc_value;
-    res = (res * 5/1023);
-    return res;
-}
-
-void display_float(float val)
-{
-    char * buf;
-    int status;
-    buf = ftoa(val, &status);
-    buf[5] = '\0';                  //Float precision Adjustment
-    WriteStringToLCD(buf);
-}
-
-void main()
-{
-    int adc_value;
-    float an0;
-    adc_init();
-    InitLCD();
-    TRISB = 0x00;
-    WriteStringToLCD("H3110 w0r1d");
-    while(1)
-    {
-        adc_value = read_adc();
-        an0 = convertToVolt(adc_value);
-        display_float(an0);
-        __delay_ms(10);
-        ClearLCDScreen();
-    }
 }

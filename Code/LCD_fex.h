@@ -21,7 +21,7 @@
 #define LCD_Data_Bus_Dir_D7 	TRISB7
 
 // Constants
-#define E_Delay       1000  
+#define E_Delay       200  
 
 
 // Function Declarations
@@ -30,8 +30,6 @@ void WriteDataToLCD(char);
 void InitLCD(void);
 void WriteStringToLCD(const char*);
 void ClearLCDScreen(void);
-void DisplayTimeToLCD(unsigned char*) ;
-void DisplayDateOnLCD( unsigned char*);
-
+void display_float(float val);
 
 #endif
